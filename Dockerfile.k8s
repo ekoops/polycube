@@ -1,0 +1,42 @@
+# syntax = tonistiigi/dockerfile:runmount20180618
+###############################################
+# STEP 1: using an Ubuntu 18.04 image to install the entire Polycube framework with all dependencies.
+# 
+# During this step an ubuntu image is used to compile Polycube with all its dependencies.
+FROM ubuntu:18.04 AS builder
+
+ARG DEFAULT_MODE=default
+ENV MODE=$DEFAULT_MODE
+RUN --mount=target=/polycube cp -r /polycube /tmp/polycube && cd /tmp/polycube && \
+mkdir -p /usr/local/share/polycube /usr/local/include/polycube && \
+SUDO="" USER="root" WORKDIR="/tmp/dev" ./scripts/install.sh polykube
+
+###############################################
+# STEP 2: using an Ubuntu 18.04 image and extracting executables obtained by the image created at STEP 1.
+# 
+# During this final step a new fresh ubuntu image is used and all the previously generated executables/libraries are copied.
+# This way, this final image contains only the result of the compilation and NOT the entire softwares/scripts needed at compile-time.
+FROM ubuntu:18.04
+
+ARG DEFAULT_MODE=default
+ENV MODE=$DEFAULT_MODE
+# copying binaries
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /usr/local/share/polycube /usr/local/share/polycube
+# copying polycube services
+COPY --from=builder /usr/lib/lib*.so /usr/lib/
+# copying libpistache libyang libtins libprometheus .so
+COPY --from=builder /usr/local/lib/lib*.so /usr/local/lib/
+# copying libyang folder containing plugins (needed for yanglint)
+COPY --from=builder /usr/local/lib/libyang /usr/local/lib/libyang 
+# copying main OS libraries
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libnl*.so /usr/lib/x86_64-linux-gnu/libcrypto*.so\
+	/usr/lib/x86_64-linux-gnu/libelf*.so /usr/lib/x86_64-linux-gnu/libssl*.so \
+	/usr/lib/x86_64-linux-gnu/libpcap*.so /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /lib/x86_64-linux-gnu/libnl*.so /lib/x86_64-linux-gnu/
+# copying base yang model
+COPY --from=builder /usr/local/include/polycube /usr/local/include/polycube
+# creating log dir and file + configuring links for libraries
+RUN mkdir -p /var/log/polycube && touch /var/log/polycube/polycubed.log && ldconfig
+# by running nsenter --mount=/host/proc/1/ns/mnt polycubed, the daemon has a complete view of the namespaces of the host and it is able to manipulate them (needed for shadow services)
+CMD ["nsenter","--mount=/host/proc/1/ns/mnt","polycubed"]

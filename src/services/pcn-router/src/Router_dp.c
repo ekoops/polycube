@@ -339,6 +339,7 @@ ARP:;  // arp packet
   struct arp_hdr *arp = data + sizeof(*eth);
   if (data + sizeof(*eth) + sizeof(*arp) > data_end)
     goto DROP;
+  pcn_log(ctx, LOG_TRACE, "received arp pkt - (ar_sip: %I) (ar_tip: %I)", arp->ar_sip, arp->ar_tip);
   if (arp->ar_op == bpf_htons(ARPOP_REQUEST)) { // arp request?
 #ifdef SHADOW
     return pcn_pkt_redirect_ns(ctx, md, md->in_port);
