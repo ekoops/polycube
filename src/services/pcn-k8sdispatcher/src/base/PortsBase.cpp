@@ -25,6 +25,9 @@ void PortsBase::update(const PortsJsonObject &conf) {
   if (conf.typeIsSet()) {
     setType(conf.getType());
   }
+  if (conf.ipIsSet()) {
+    setIp(conf.getIp());
+  }
 }
 
 PortsJsonObject PortsBase::toJsonObject() {
@@ -33,6 +36,7 @@ PortsJsonObject PortsBase::toJsonObject() {
 
   conf.setName(getName());
   conf.setType(getType());
+  conf.setIp(getIp());
 
   return conf;
 }

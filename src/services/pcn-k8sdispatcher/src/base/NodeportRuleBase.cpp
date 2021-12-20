@@ -20,8 +20,8 @@ NodeportRuleBase::~NodeportRuleBase() {}
 
 void NodeportRuleBase::update(const NodeportRuleJsonObject &conf) {
 
-  if (conf.internalSrcIsSet()) {
-    setInternalSrc(conf.getInternalSrc());
+  if (conf.nodeportNameIsSet()) {
+    setNodeportName(conf.getNodeportName());
   }
   if (conf.serviceTypeIsSet()) {
     setServiceType(conf.getServiceType());
@@ -29,9 +29,10 @@ void NodeportRuleBase::update(const NodeportRuleJsonObject &conf) {
 }
 
 NodeportRuleJsonObject NodeportRuleBase::toJsonObject() {
-  NodeportRuleJsonObject conf;
+    logger()->info("READ NodeportRuleBase::toJsonObject");
+    NodeportRuleJsonObject conf;
 
-  conf.setInternalSrc(getInternalSrc());
+  conf.setNodeportName(getNodeportName());
   conf.setNodeportPort(getNodeportPort());
   conf.setProto(getProto());
   conf.setServiceType(getServiceType());

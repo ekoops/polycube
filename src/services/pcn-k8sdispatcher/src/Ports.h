@@ -17,23 +17,28 @@ class K8sdispatcher;
 using namespace polycube::service::model;
 
 class Ports : public PortsBase {
- public:
-  Ports(polycube::service::Cube<Ports> &parent,
-        std::shared_ptr<polycube::service::PortIface> port,
-        const PortsJsonObject &conf);
-  virtual ~Ports();
+public:
+    Ports(polycube::service::Cube <Ports> &parent,
+          std::shared_ptr <polycube::service::PortIface> port,
+          const PortsJsonObject &conf);
 
-  /// <summary>
-  /// Type of the k8sdispatcher port (e.g. BACKEND or FRONTEND)
-  /// </summary>
-  PortsTypeEnum getType() override;
-  void setType(const PortsTypeEnum &value) override;
-  void update(const PortsJsonObject &conf);
-  PortsJsonObject toJsonObject();
+    virtual ~Ports();
 
- private:
-  std::string mac_;
-  std::string ip_;
-  PortsTypeEnum port_type_;
+    /// <summary>
+    /// Type of the k8sdispatcher port (e.g. BACKEND or FRONTEND)
+    /// </summary>
+    PortsTypeEnum getType() override;
+
+    void setType(const PortsTypeEnum &value) override;
+
+    /// <summary>
+    /// IP address of the node interface (only for FRONTEND port)
+    /// </summary>
+    std::string getIp() override;
+
+    void setIp(const std::string &value) override;
+
+private:
+    std::string ip_;
+    PortsTypeEnum portType_;
 };
-

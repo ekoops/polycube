@@ -29,12 +29,6 @@ void K8sdispatcherBase::update(const K8sdispatcherJsonObject &conf) {
       m->update(i);
     }
   }
-  if (conf.clusterIpSubnetIsSet()) {
-    setClusterIpSubnet(conf.getClusterIpSubnet());
-  }
-  if (conf.clientSubnetIsSet()) {
-    setClientSubnet(conf.getClientSubnet());
-  }
   if (conf.internalSrcIpIsSet()) {
     setInternalSrcIp(conf.getInternalSrcIp());
   }
@@ -63,15 +57,14 @@ void K8sdispatcherBase::update(const K8sdispatcherJsonObject &conf) {
 }
 
 K8sdispatcherJsonObject K8sdispatcherBase::toJsonObject() {
-  K8sdispatcherJsonObject conf;
+    logger()->info("READ K8sdispatcherBase::toJsonObject");
+    K8sdispatcherJsonObject conf;
   conf.setBase(to_json());
 
   conf.setName(getName());
   for (auto &i : getPortsList()) {
     conf.addPorts(i->toJsonObject());
   }
-  conf.setClusterIpSubnet(getClusterIpSubnet());
-  conf.setClientSubnet(getClientSubnet());
   conf.setInternalSrcIp(getInternalSrcIp());
   for(auto &i : getNattingRuleList()) {
     conf.addNattingRule(i->toJsonObject());

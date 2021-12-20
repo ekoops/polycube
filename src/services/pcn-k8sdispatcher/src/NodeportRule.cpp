@@ -5,53 +5,96 @@
 * https://github.com/polycube-network/polycube-codegen
 */
 
-
-// TODO: Modify these methods with your own implementation
-
-
 #include "NodeportRule.h"
 #include "K8sdispatcher.h"
 
 
 NodeportRule::NodeportRule(K8sdispatcher &parent, const NodeportRuleJsonObject &conf)
-    : NodeportRuleBase(parent) , parent_(parent) {
-
-  //todo modifica
-
-  if(conf.internalSrcIsSet())
-    internal_ip_ = conf.getInternalSrc();
-  proto_ = conf.getProto();
-  port_ = conf.getNodeportPort();
-  if(conf.serviceTypeIsSet())
-    serviceType=conf.getServiceType();
-  else
-    serviceType=NodeportRuleServiceTypeEnum::CLUSTER;
+        : NodeportRuleBase(parent), parent_(parent) {
+    logger()->info("creating NodeportRule instance");
+    this->nodeportName_ = conf.nodeportNameIsSet() ? conf.getNodeportName() : "";
+    this->nodeportPort_ = conf.getNodeportPort();
+    this->proto_ = conf.getProto();
+    this->serviceType_ = conf.serviceTypeIsSet() ? conf.getServiceType() : NodeportRuleServiceTypeEnum::CLUSTER;
+    logger()->info("created NodeportRule instance");
 }
 
 NodeportRule::~NodeportRule() {}
 
-std::string NodeportRule::getInternalSrc() {
-    return internal_ip_;
+void NodeportRule::update(const NodeportRuleJsonObject &conf) {
+
+    if (conf.nodeportNameIsSet()) {
+        setNodeportName(conf.getNodeportName());
+    }
+    if (conf.serviceTypeIsSet()) {
+        setServiceType(conf.getServiceType());
+    }
 }
 
-void NodeportRule::setInternalSrc(const std::string &value) {
-  throw std::runtime_error("NodeportRule::setInternalSrc: Method not allowed");
+NodeportRuleJsonObject NodeportRule::toJsonObject() {
+    logger()->info("READ NodeportRule::toJsonObject");
+    NodeportRuleJsonObject conf;
+    try {
+        conf.setNodeportName(getNodeportName());
+        conf.setNodeportPort(getNodeportPort());
+        conf.setProto(getProto());
+        conf.setServiceType(getServiceType());
+    } catch (std::exception& ex) {
+        logger()->warn("NodeportRule::toJsonObject exception: {}", ex.what());
+    }
+
+    return conf;
+}
+
+std::string NodeportRule::getNodeportName() {
+    return this->nodeportName_;
+}
+
+void NodeportRule::setNodeportName(const std::string &value) {
+    logger()->info("received a request to update NodePort rule's name");
+    this->nodeportName_ = value;
+    logger()->info("updated NodePort rule's service name");
 }
 
 uint16_t NodeportRule::getNodeportPort() {
-  return port_;
+    return this->nodeportPort_;
 }
 
 std::string NodeportRule::getProto() {
-    return proto_;
+    return this->proto_;
 }
 
 NodeportRuleServiceTypeEnum NodeportRule::getServiceType() {
-  return serviceType;
+    return this->serviceType_;
 }
 
 void NodeportRule::setServiceType(const NodeportRuleServiceTypeEnum &value) {
-  throw std::runtime_error("NodeportRule::setServiceType: Method not allowed");
+    logger()->info("received a request to update NodePort rule's service type");
+    try {
+        logger()->trace("retrieving NodePort rules kernel map");
+        auto dp_rules = this->parent_.get_hash_table<dp_k, dp_v>(K8sdispatcher::EBPF_DP_RULES_MAP);
+        logger()->trace("retrieved NodePort rules kernel map");
+
+        dp_k dp_key{
+                .dummy = 56,
+                .external_port = htons(this->nodeportPort_),
+                .proto = K8sdispatcher::protoStrToInt(this->proto_),
+        };
+        dp_v dp_value{
+                .internal_port = htons(this->nodeportPort_),
+                .entry_type = K8sdispatcher::serviceTypeToInt(value),
+        };
+
+        logger()->trace("updating NodePort rule's service type in NodePort rules kernel map");
+        dp_rules.set(dp_key, dp_value);
+        this->serviceType_ = value;
+        logger()->trace("updated NodePort rule's service type in NodePort rules kernel map");
+    }
+    catch (std::exception &ex) {
+        logger()->error("failed to update NodePort rule's in kernel map: {}", ex.what());
+        throw std::runtime_error("failed to store NodePort rule's in kernel map");
+    }
+    logger()->info("updated NodePort rule's service type");
 }
 
 

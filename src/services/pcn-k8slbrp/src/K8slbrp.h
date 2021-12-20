@@ -24,6 +24,7 @@
 #include "SrcIpRewrite.h"
 #include "hash_tuple.h"
 #include <set>
+#include <mutex>
 
 
 using namespace polycube::service::model;

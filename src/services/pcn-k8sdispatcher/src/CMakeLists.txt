@@ -10,30 +10,30 @@ if (NOT DEFINED POLYCUBE_STANDALONE_SERVICE OR POLYCUBE_STANDALONE_SERVICE)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(POLYCUBE libpolycube)
   include_directories(${POLYCUBE_INCLUDE_DIRS})
-endif(NOT DEFINED POLYCUBE_STANDALONE_SERVICE OR POLYCUBE_STANDALONE_SERVICE)
+endif (NOT DEFINED POLYCUBE_STANDALONE_SERVICE OR POLYCUBE_STANDALONE_SERVICE)
 
 # Needed to load files as variables
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(pcn-k8sdispatcher SHARED
-  ${SERIALIZER_SOURCES}
-  ${API_SOURCES}
-  ${BASE_SOURCES}
-  K8sdispatcher.cpp
-  NattingRule.cpp
-  NodeportRule.cpp
-  Ports.cpp
-  K8sdispatcher-lib.cpp)
+        ${SERIALIZER_SOURCES}
+        ${API_SOURCES}
+        ${BASE_SOURCES}
+        K8sdispatcher.cpp
+        NattingRule.cpp
+        NodeportRule.cpp
+        Ports.cpp
+        K8sdispatcher-lib.cpp)
 
 # load ebpf datapath code a variable
 load_file_as_variable(pcn-k8sdispatcher
-  K8sdispatcher_dp.c
-  k8sdispatcher_code)
+        K8sdispatcher_dp.c
+        k8sdispatcher_code)
 
 # load datamodel in a variable
 load_file_as_variable(pcn-k8sdispatcher
-  ../datamodel/k8sdispatcher.yang
-  k8sdispatcher_datamodel)
+        ../datamodel/k8sdispatcher.yang
+        k8sdispatcher_datamodel)
 
 target_link_libraries(pcn-k8sdispatcher ${POLYCUBE_LIBRARIES})
 
@@ -42,8 +42,8 @@ target_link_libraries(pcn-k8sdispatcher ${POLYCUBE_LIBRARIES})
 set(CMAKE_INSTALL_LIBDIR /usr/lib)
 
 install(
-    TARGETS
-    pcn-k8sdispatcher
-    DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}"
+        TARGETS
+        pcn-k8sdispatcher
+        DESTINATION
+        "${CMAKE_INSTALL_LIBDIR}"
 )

@@ -57,23 +57,7 @@ public:
   void unsetPorts();
 
   /// <summary>
-  /// Range of VIPs where clusterIP services are exposed
-  /// </summary>
-  std::string getClusterIpSubnet() const;
-  void setClusterIpSubnet(std::string value);
-  bool clusterIpSubnetIsSet() const;
-  void unsetClusterIpSubnet();
-
-  /// <summary>
-  /// Range of IPs of pods in this node
-  /// </summary>
-  std::string getClientSubnet() const;
-  void setClientSubnet(std::string value);
-  bool clientSubnetIsSet() const;
-  void unsetClientSubnet();
-
-  /// <summary>
-  /// Internal src ip used for services with externaltrafficpolicy&#x3D;cluster
+  /// Internal src ip used for services with externalTrafficPolicy&#x3D;CLUSTER
   /// </summary>
   std::string getInternalSrcIp() const;
   void setInternalSrcIp(std::string value);
@@ -108,10 +92,6 @@ private:
   bool m_nameIsSet;
   std::vector<PortsJsonObject> m_ports;
   bool m_portsIsSet;
-  std::string m_clusterIpSubnet;
-  bool m_clusterIpSubnetIsSet;
-  std::string m_clientSubnet;
-  bool m_clientSubnetIsSet;
   std::string m_internalSrcIp;
   bool m_internalSrcIpIsSet;
   std::vector<NattingRuleJsonObject> m_nattingRule;

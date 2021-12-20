@@ -49,6 +49,12 @@ class PortsBase: public polycube::service::Port {
   virtual PortsTypeEnum getType() = 0;
   virtual void setType(const PortsTypeEnum &value) = 0;
 
+  /// <summary>
+  /// IP address of the node interface (only for FRONTEND port)
+  /// </summary>
+  virtual std::string getIp() = 0;
+  virtual void setIp(const std::string &value) = 0;
+
   std::shared_ptr<spdlog::logger> logger();
  protected:
   K8sdispatcher &parent_;

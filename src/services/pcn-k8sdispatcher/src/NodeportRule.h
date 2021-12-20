@@ -17,36 +17,43 @@ class K8sdispatcher;
 using namespace polycube::service::model;
 
 class NodeportRule : public NodeportRuleBase {
- public:
-  NodeportRule(K8sdispatcher &parent, const NodeportRuleJsonObject &conf);
-  virtual ~NodeportRule();
+public:
+    NodeportRule(K8sdispatcher &parent, const NodeportRuleJsonObject &conf);
+    virtual void update(const NodeportRuleJsonObject &conf);
+    virtual NodeportRuleJsonObject toJsonObject();
 
-  /// <summary>
-  /// Source IP address
-  /// </summary>
-  std::string getInternalSrc() override;
-  void setInternalSrc(const std::string &value) override;
+    virtual ~NodeportRule();
 
-  /// <summary>
-  /// Destination L4 port number
-  /// </summary>
-  uint16_t getNodeportPort() override;
+    /// <summary>
+    /// An optional name for the NodePort rule
+    /// </summary>
+    std::string getNodeportName() override;
 
-  /// <summary>
-  /// L4 protocol
-  /// </summary>
-  std::string getProto() override;
+    void setNodeportName(const std::string &value) override;
 
-  /// <summary>
-  /// Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoint
-  /// </summary>
-  NodeportRuleServiceTypeEnum getServiceType() override;
-  void setServiceType(const NodeportRuleServiceTypeEnum &value) override;
+    /// <summary>
+    /// Destination L4 port number
+    /// </summary>
+    uint16_t getNodeportPort() override;
+
+    /// <summary>
+    /// L4 protocol
+    /// </summary>
+    std::string getProto() override;
+
+    /// <summary>
+    /// Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoint
+    /// </summary>
+    NodeportRuleServiceTypeEnum getServiceType() override;
+
+    void setServiceType(const NodeportRuleServiceTypeEnum &value) override;
+
+    static int serviceTypeToInt(const NodeportRuleServiceTypeEnum &serviceType);
 
 private:
-  K8sdispatcher& parent_;
-  uint16_t  port_;
-  std::string proto_;
-  std::string internal_ip_;
-  NodeportRuleServiceTypeEnum serviceType;
+    K8sdispatcher &parent_;
+    std::string nodeportName_;
+    uint16_t nodeportPort_;
+    std::string proto_;
+    NodeportRuleServiceTypeEnum serviceType_;
 };

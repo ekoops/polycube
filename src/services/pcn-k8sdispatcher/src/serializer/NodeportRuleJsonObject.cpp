@@ -18,7 +18,7 @@ namespace service {
 namespace model {
 
 NodeportRuleJsonObject::NodeportRuleJsonObject() {
-  m_internalSrcIsSet = false;
+  m_nodeportNameIsSet = false;
   m_nodeportPortIsSet = false;
   m_protoIsSet = false;
   m_serviceTypeIsSet = false;
@@ -26,14 +26,14 @@ NodeportRuleJsonObject::NodeportRuleJsonObject() {
 
 NodeportRuleJsonObject::NodeportRuleJsonObject(const nlohmann::json &val) :
   JsonObjectBase(val) {
-  m_internalSrcIsSet = false;
+  m_nodeportNameIsSet = false;
   m_nodeportPortIsSet = false;
   m_protoIsSet = false;
   m_serviceTypeIsSet = false;
 
 
-  if (val.count("internal-src")) {
-    setInternalSrc(val.at("internal-src").get<std::string>());
+  if (val.count("nodeport-name")) {
+    setNodeportName(val.at("nodeport-name").get<std::string>());
   }
 
   if (val.count("nodeport-port")) {
@@ -55,8 +55,8 @@ nlohmann::json NodeportRuleJsonObject::toJson() const {
     val.update(getBase());
   }
 
-  if (m_internalSrcIsSet) {
-    val["internal-src"] = m_internalSrc;
+  if (m_nodeportNameIsSet) {
+    val["nodeport-name"] = m_nodeportName;
   }
 
   if (m_nodeportPortIsSet) {
@@ -74,21 +74,21 @@ nlohmann::json NodeportRuleJsonObject::toJson() const {
   return val;
 }
 
-std::string NodeportRuleJsonObject::getInternalSrc() const {
-  return m_internalSrc;
+std::string NodeportRuleJsonObject::getNodeportName() const {
+  return m_nodeportName;
 }
 
-void NodeportRuleJsonObject::setInternalSrc(std::string value) {
-  m_internalSrc = value;
-  m_internalSrcIsSet = true;
+void NodeportRuleJsonObject::setNodeportName(std::string value) {
+  m_nodeportName = value;
+  m_nodeportNameIsSet = true;
 }
 
-bool NodeportRuleJsonObject::internalSrcIsSet() const {
-  return m_internalSrcIsSet;
+bool NodeportRuleJsonObject::nodeportNameIsSet() const {
+  return m_nodeportNameIsSet;
 }
 
-void NodeportRuleJsonObject::unsetInternalSrc() {
-  m_internalSrcIsSet = false;
+void NodeportRuleJsonObject::unsetNodeportName() {
+  m_nodeportNameIsSet = false;
 }
 
 uint16_t NodeportRuleJsonObject::getNodeportPort() const {

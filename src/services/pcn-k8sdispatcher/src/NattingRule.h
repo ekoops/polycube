@@ -12,79 +12,82 @@
 #include "../base/NattingRuleBase.h"
 
 struct st_k {
-  uint32_t src_ip;
-  uint32_t dst_ip;
-  uint16_t src_port;
-  uint16_t dst_port;
-  uint8_t proto;
+    uint32_t src_ip;
+    uint32_t dst_ip;
+    uint16_t src_port;
+    uint16_t dst_port;
+    uint8_t proto;
 } __attribute__((packed));
 
 struct st_v {
-  uint32_t new_ip;
-  uint16_t new_port;
-  uint8_t originating_rule_type;
+    uint32_t new_ip;
+    uint16_t new_port;
+    uint8_t originating_rule_type;
 } __attribute__((packed));
-
 
 class K8sdispatcher;
 
 using namespace polycube::service::model;
 
 class NattingRule : public NattingRuleBase {
- public:
-  NattingRule(K8sdispatcher &parent, const NattingRuleJsonObject &conf);
-  NattingRule(K8sdispatcher &parent, const std::string srcIp,
-              const std::string dstIp, const uint16_t srcPort,
-              const uint16_t dstPort, const uint8_t proto,
-              const std::string newIp, const uint16_t newPort);
-  virtual ~NattingRule();
+public:
+    NattingRule(K8sdispatcher &parent, const NattingRuleJsonObject &conf);
 
-  /// <summary>
-  /// Source IP address
-  /// </summary>
-  std::string getInternalSrc() override;
+    NattingRule(K8sdispatcher &parent, const std::string srcIp,
+                const std::string dstIp, const uint16_t srcPort,
+                const uint16_t dstPort, const uint8_t proto,
+                const std::string newIp, const uint16_t newPort);
 
-  /// <summary>
-  /// Destination IP address
-  /// </summary>
-  std::string getInternalDst() override;
+    virtual ~NattingRule();
 
-  /// <summary>
-  /// Source L4 port number
-  /// </summary>
-  uint16_t getInternalSport() override;
+    /// <summary>
+    /// Source IP address
+    /// </summary>
+    std::string getInternalSrc() override;
 
-  /// <summary>
-  /// Destination L4 port number
-  /// </summary>
-  uint16_t getInternalDport() override;
+    /// <summary>
+    /// Destination IP address
+    /// </summary>
+    std::string getInternalDst() override;
 
-  /// <summary>
-  /// L4 protocol
-  /// </summary>
-  std::string getProto() override;
+    /// <summary>
+    /// Source L4 port number
+    /// </summary>
+    uint16_t getInternalSport() override;
 
-  /// <summary>
-  /// Translated IP address
-  /// </summary>
-  std::string getExternalIp() override;
-  void setExternalIp(const std::string &value) override;
+    /// <summary>
+    /// Destination L4 port number
+    /// </summary>
+    uint16_t getInternalDport() override;
 
-  /// <summary>
-  /// Translated L4 port number
-  /// </summary>
-  uint16_t getExternalPort() override;
-  void setExternalPort(const uint16_t &value) override;
+    /// <summary>
+    /// L4 protocol
+    /// </summary>
+    std::string getProto() override;
 
-  void update(const NattingRuleJsonObject &conf);
-  NattingRuleJsonObject toJsonObject();
+    /// <summary>
+    /// Translated IP address
+    /// </summary>
+    std::string getExternalIp() override;
 
- private:
-  std::string srcIp;
-  std::string dstIp;
-  uint16_t srcPort;
-  uint16_t dstPort;
-  std::string proto;
-  std::string newIp;
-  uint16_t newPort;
+    void setExternalIp(const std::string &value) override;
+
+    /// <summary>
+    /// Translated L4 port number
+    /// </summary>
+    uint16_t getExternalPort() override;
+
+    void setExternalPort(const uint16_t &value) override;
+
+    void update(const NattingRuleJsonObject &conf);
+    NattingRuleJsonObject toJsonObject();
+
+private:
+    std::string srcIp_;
+    std::string dstIp_;
+    uint16_t srcPort_;
+    uint16_t dstPort_;
+    std::string proto_;
+    std::string newIp_;
+    uint16_t newPort_;
 };

@@ -30,7 +30,7 @@ const uint Service::BACKEND_REPLICAS = 3;
 
 
 Service::Service(K8slbrp &parent, const ServiceJsonObject &conf)
-    : ServiceBase(parent), backend_size_(INITIAL_BACKEND_SIZE) {
+        : ServiceBase(parent), backend_size_(INITIAL_BACKEND_SIZE) {
     logger()->info("creating Service instance");
 
     vip_ = conf.getVip();
@@ -48,6 +48,7 @@ Service::Service(K8slbrp &parent, const ServiceJsonObject &conf)
     // only at the end. In this way it will be called only once.
     // Now this function is called every time a new backend is added
     addBackendList(conf.getBackend());
+    logger()->info("created Service instance");
 }
 
 Service::~Service() {}
@@ -94,13 +95,13 @@ void Service::removeServiceFromKernelMap() {
 }
 
 void Service::removeBackendFromServiceMatrix(std::string backend_ip) {
-    int bkd_size = std::max(backend_size_, (uint)service_backends_.size());
+    int bkd_size = std::max(backend_size_, (uint) service_backends_.size());
     int vect_size = bkd_size * BACKEND_REPLICAS;
     backend_matrix_[backend_ip] = getEmptyIntVector(vect_size);
 }
 
 void Service::addBackendToServiceMatrix(std::string backend_ip) {
-    int bkd_size = std::max(backend_size_, (uint)service_backends_.size());
+    int bkd_size = std::max(backend_size_, (uint) service_backends_.size());
     int vect_size = bkd_size * BACKEND_REPLICAS;
     backend_matrix_[backend_ip] = getRandomIntVector(vect_size);
     if (getProto() != ServiceProtoEnum::ICMP) {
@@ -153,7 +154,7 @@ void Service::updateKernelServiceMap(
 
     services_table.set(service_key, service_value);
 
-    for (const auto &backend_ip : consistent_array) {
+    for (const auto &backend_ip: consistent_array) {
         index++;
 
         auto bck = getBackend(backend_ip);
@@ -184,10 +185,10 @@ void Service::updateKernelServiceMap(
 std::vector<std::string> Service::getConsistentArray() {
     std::vector<std::string> backend_list;
     std::vector<std::vector<int>> backend_matrix_list;
-    int bkd_size = std::max(backend_size_, (uint)service_backends_.size());
+    int bkd_size = std::max(backend_size_, (uint) service_backends_.size());
     int array_rows = bkd_size * BACKEND_REPLICAS;
 
-    for (const auto &s : backend_matrix_) {
+    for (const auto &s: backend_matrix_) {
         backend_list.push_back(s.first);
         backend_matrix_list.push_back(s.second);
     }
@@ -225,7 +226,7 @@ std::vector<std::string> Service::getConsistentArray() {
     for (int j = 0; j < array_rows; j++) {
         int x = 0;
         index = j;
-        for (const auto &elem : backend_matrix_list) {
+        for (const auto &elem: backend_matrix_list) {
             if (count == array_rows) {
                 goto exit;
             }
@@ -270,14 +271,14 @@ std::vector<std::string> Service::getConsistentArray() {
  number of entries assigned to this backend.
  */
 std::map<std::string, int> Service::get_weight_backend() {
-    int bkd_size = std::max(backend_size_, (uint)service_backends_.size());
+    int bkd_size = std::max(backend_size_, (uint) service_backends_.size());
     int vect_size = bkd_size * BACKEND_REPLICAS;
     int total_weight = 0;
     int sum_weight = 0;
     std::map<std::string, int> weight_back_pool;
 
     // Calculate the total of weights
-    for (auto &backend : service_backends_) {
+    for (auto &backend: service_backends_) {
         sum_weight += backend.second.getWeight();
     }
     float coeff = (static_cast<float>(vect_size) / sum_weight);
@@ -285,7 +286,7 @@ std::map<std::string, int> Service::get_weight_backend() {
                     sum_weight, coeff);
 
     // Calculate ,for each backend, its number of entries
-    for (auto &backend : service_backends_) {
+    for (auto &backend: service_backends_) {
         if (backend.second.getWeight() == 0)
             continue;
         int weight_backend = (backend.second.getWeight()) * (coeff);
@@ -300,7 +301,7 @@ std::map<std::string, int> Service::get_weight_backend() {
 
     // Allign all , if necessary
     while (res > 0) {
-        for (auto &backend : service_backends_) {
+        for (auto &backend: service_backends_) {
             if (backend.second.getWeight() == 0)
                 continue;
 
@@ -389,7 +390,7 @@ std::shared_ptr<ServiceBackend> Service::getBackend(const std::string &ip) {
 
 std::vector<std::shared_ptr<ServiceBackend>> Service::getBackendList() {
     std::vector<std::shared_ptr<ServiceBackend>> backends_vect;
-    for (auto &it : service_backends_)
+    for (auto &it: service_backends_)
         backends_vect.push_back(getBackend(it.first));
 
     return backends_vect;
@@ -444,10 +445,12 @@ void Service::addBackend(const std::string &ip, const ServiceBackendJsonObject &
 }
 
 void Service::addBackendList(const std::vector<ServiceBackendJsonObject> &conf) {
-    for (auto &i : conf) {
+    logger()->info("request for adding backends list to service's backends");
+    for (auto &i: conf) {
         std::string ip_ = i.getIp();
         addBackend(ip_, i);
     }
+    logger()->info("added backends list to service's backends");
 }
 
 void Service::replaceBackend(const std::string &ip, const ServiceBackendJsonObject &conf) {
@@ -482,8 +485,7 @@ void Service::delBackend(const std::string &ip) {
         // If there are no backends let's remove all entries from the eBPF map
         backend_matrix_.clear();
         removeServiceFromKernelMap();
-    }
-    else {
+    } else {
         updateConsistentHashMap();
     }
 }

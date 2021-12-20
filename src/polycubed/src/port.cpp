@@ -330,8 +330,14 @@ void Port::subscribe_peer_parameter(const std::string &param_name,
   // Subscribe to the peer parameter only if the peer is an netdev
   // (we are not interested in align different cubes' ports).
   ExtIface* extiface = dynamic_cast<ExtIface*>(peer_port_);
-  if (extiface)
-    extiface->subscribe_parameter(uuid().str(), param_name, callback);
+  if (extiface) {
+      logger->info("param_name {0}", param_name);
+      logger->info("port (uuid: {0} index: {1} parent_name: {2} port_name: {3})",
+           uuid().str(), index(), parent_.get_name(), name());
+      logger->info("extiface (iface_name: {0}, index {1}, port_id: {2})",
+           extiface->get_iface_name(), extiface->get_index(), extiface->get_port_id());
+      extiface->subscribe_parameter(uuid().str(), param_name, callback);
+  }
 }
 
 void Port::unsubscribe_peer_parameter(const std::string &param_name) {

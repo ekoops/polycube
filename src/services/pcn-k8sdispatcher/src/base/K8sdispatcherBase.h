@@ -55,19 +55,7 @@ class K8sdispatcherBase: public virtual polycube::service::Cube<Ports> {
   virtual void delPortsList();
 
   /// <summary>
-  /// Range of VIPs where clusterIP services are exposed
-  /// </summary>
-  virtual std::string getClusterIpSubnet() = 0;
-  virtual void setClusterIpSubnet(const std::string &value) = 0;
-
-  /// <summary>
-  /// Range of IPs of pods in this node
-  /// </summary>
-  virtual std::string getClientSubnet() = 0;
-  virtual void setClientSubnet(const std::string &value) = 0;
-
-  /// <summary>
-  /// Internal src ip used for services with externaltrafficpolicy&#x3D;cluster
+  /// Internal src ip used for services with externalTrafficPolicy&#x3D;CLUSTER
   /// </summary>
   virtual std::string getInternalSrcIp() = 0;
   virtual void setInternalSrcIp(const std::string &value) = 0;

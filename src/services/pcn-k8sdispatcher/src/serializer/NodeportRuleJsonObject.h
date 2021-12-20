@@ -40,12 +40,12 @@ public:
 
 
   /// <summary>
-  /// Source IP address
+  /// An optional name for the NodePort rule
   /// </summary>
-  std::string getInternalSrc() const;
-  void setInternalSrc(std::string value);
-  bool internalSrcIsSet() const;
-  void unsetInternalSrc();
+  std::string getNodeportName() const;
+  void setNodeportName(std::string value);
+  bool nodeportNameIsSet() const;
+  void unsetNodeportName();
 
   /// <summary>
   /// Destination L4 port number
@@ -71,8 +71,8 @@ public:
   static NodeportRuleServiceTypeEnum string_to_NodeportRuleServiceTypeEnum(const std::string &str);
 
 private:
-  std::string m_internalSrc;
-  bool m_internalSrcIsSet;
+  std::string m_nodeportName;
+  bool m_nodeportNameIsSet;
   uint16_t m_nodeportPort;
   bool m_nodeportPortIsSet;
   std::string m_proto;

@@ -281,7 +281,7 @@ void ExtIface::subscribe_parameter(const std::string &caller,
     notification_new_address = [&](int ifindex, const std::string &cidr) {
       // Check if the iface in the notification is that of the ExtIface
       if (ifindex == ifindex_iface) {
-        for (auto &map_element : parameter_ip_event_callbacks) {
+          for (auto &map_element : parameter_ip_event_callbacks) {
           (map_element.second).first(get_iface_name(), cidr);
         }
       }

@@ -6,111 +6,107 @@
 */
 
 
-// TODO: Modify these methods with your own implementation
-
-
 #include "NattingRule.h"
 #include "K8sdispatcher.h"
 
 
 NattingRule::NattingRule(K8sdispatcher &parent, const NattingRuleJsonObject &conf)
     : NattingRuleBase(parent) {
-  if (conf.externalIpIsSet()) {
-    setExternalIp(conf.getExternalIp());
-  }
-
-  if (conf.externalPortIsSet()) {
-    setExternalPort(conf.getExternalPort());
-  }
-
+    logger()->info("creating NattingRule instance");
+    this->srcIp_ = conf.internalSrcIsSet() ? conf.getInternalSrc() : "";
+    this->dstIp_ = conf.internalDstIsSet() ? conf.getInternalDst() : "";
+    this->srcPort_ = conf.internalSportIsSet() ? conf.getInternalSport() : 0;
+    this->dstPort_ = conf.internalDportIsSet() ? conf.getInternalDport() : 0;
+    this->proto_ = conf.getProto();
+    this->newIp_ = conf.externalIpIsSet() ? conf.getExternalIp() : "";
+    this->newPort_ = conf.externalPortIsSet() ? conf.getExternalPort() : 0;
+    logger()->info("created NattingRule instance");
 }
 
 NattingRule::NattingRule(K8sdispatcher &parent, const std::string srcIp,
-                           const std::string dstIp, const uint16_t srcPort,
-                           const uint16_t dstPort, const uint8_t proto,
-                           const std::string newIp, const uint16_t newPort
+                         const std::string dstIp, const uint16_t srcPort,
+                         const uint16_t dstPort, const uint8_t proto,
+                         const std::string newIp, const uint16_t newPort
 )
-    : NattingRuleBase(parent) {
-  this->srcIp = srcIp;
-  this->dstIp = dstIp;
-  this->srcPort = srcPort;
-  this->dstPort = dstPort;
-  this->newIp = newIp;
-  this->newPort = newPort;
-  this->proto = parent.proto_from_int_to_string(proto);
+        : NattingRuleBase(parent) {
+    this->srcIp_ = srcIp;
+    this->dstIp_ = dstIp;
+    this->srcPort_ = srcPort;
+    this->dstPort_ = dstPort;
+    this->proto_ = K8sdispatcher::protoIntToStr(proto);
+    this->newIp_ = newIp;
+    this->newPort_ = newPort;
 }
 
-
-NattingRule::~NattingRule() {}
-
 void NattingRule::update(const NattingRuleJsonObject &conf) {
-  // This method updates all the object/parameter in NattingTable object
-  // specified in the conf JsonObject.
-  // You can modify this implementation.
+    // This method updates all the object/parameter in NattingTable object
+    // specified in the conf JsonObject.
+    // You can modify this implementation.
 
-  if (conf.externalIpIsSet()) {
-    setExternalIp(conf.getExternalIp());
-  }
-  if (conf.externalPortIsSet()) {
-    setExternalPort(conf.getExternalPort());
-  }
+    if (conf.externalIpIsSet()) {
+        setExternalIp(conf.getExternalIp());
+    }
+    if (conf.externalPortIsSet()) {
+        setExternalPort(conf.getExternalPort());
+    }
 }
 
 NattingRuleJsonObject NattingRule::toJsonObject() {
-  NattingRuleJsonObject conf;
-  conf.setInternalSrc(getInternalSrc());
-  conf.setInternalDst(getInternalDst());
-  conf.setInternalSport(getInternalSport());
-  conf.setInternalDport(getInternalDport());
-  conf.setProto(getProto());
-  conf.setExternalIp(getExternalIp());
-  conf.setExternalPort(getExternalPort());
+    logger()->info("READ NattingRule::toJsonObject");
+    NattingRuleJsonObject conf;
+    try {
+        conf.setInternalSrc(getInternalSrc());
+        conf.setInternalDst(getInternalDst());
+        conf.setInternalSport(getInternalSport());
+        conf.setInternalDport(getInternalDport());
+        conf.setProto(getProto());
+        conf.setExternalIp(getExternalIp());
+        conf.setExternalPort(getExternalPort());
+    }
+    catch (std::exception& ex) {
+        logger()->warn("NattingRule::toJsonObject exception: {}", ex.what());
+    }
 
-  return conf;
+    return conf;
 }
 
+NattingRule::~NattingRule() {}
+
 std::string NattingRule::getInternalSrc() {
-  // This method retrieves the internalSrc value.
-  return srcIp;
+    return srcIp_;
 }
 
 std::string NattingRule::getInternalDst() {
-  // This method retrieves the internalDst value.
-  return dstIp;
+    return dstIp_;
 }
 
 uint16_t NattingRule::getInternalSport() {
-  // This method retrieves the internalSport value.
-  return srcPort;
+    return srcPort_;
 }
 
 uint16_t NattingRule::getInternalDport() {
-  // This method retrieves the internalDport value.
-  return dstPort;
+    return dstPort_;
 }
 
 std::string NattingRule::getProto() {
-  // This method retrieves the proto value.
-  return proto;
+    return proto_;
 }
 
 std::string NattingRule::getExternalIp() {
-  // This method retrieves the externalIp value.
-  return newIp;
+    return newIp_;
 }
 
 void NattingRule::setExternalIp(const std::string &value) {
-  // This method set the externalIp value.
-  throw std::runtime_error("Cannot modify a natting table entry");
+    logger()->warn("NattingRule::setExternalIp: Method not implemented");
 }
 
 uint16_t NattingRule::getExternalPort() {
-  // This method retrieves the externalPort value.
-  return newPort;
+    return newPort_;
 }
 
 void NattingRule::setExternalPort(const uint16_t &value) {
-  // This method set the externalPort value.
-  throw std::runtime_error("Cannot modify a natting table entry");
+    logger()->warn("NattingRule::setExternalPort: Method not implemented");
 }
+
+
 

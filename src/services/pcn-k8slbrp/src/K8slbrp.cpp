@@ -29,12 +29,12 @@ const std::string K8slbrp::EBPF_IP_TO_FRONTEND_PORT_MAP = "ip_to_frontend_port";
 K8slbrp::K8slbrp(const std::string name, const K8slbrpJsonObject &conf) :
         Cube(conf.getBase(), {K8slbrp::buildK8sLbrpCode(k8slbrp_code, conf.getPortMode())}, {}),
         K8slbrpBase(name),
-        k8slbrp_code_ {K8slbrp::buildK8sLbrpCode(k8slbrp_code, conf.getPortMode())},
+        k8slbrp_code_{K8slbrp::buildK8sLbrpCode(k8slbrp_code, conf.getPortMode())},
         port_mode_{conf.getPortMode()} {
     logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [K8slbrp] [%n] [%l] %v");
     logger()->info(
-        "creating K8slbrp instance in {0} port mode",
-        K8slbrpJsonObject::K8slbrpPortModeEnum_to_string(port_mode_)
+            "creating K8slbrp instance in {0} port mode",
+            K8slbrpJsonObject::K8slbrpPortModeEnum_to_string(port_mode_)
     );
 
     addServiceList(conf.getService());
@@ -46,7 +46,7 @@ K8slbrp::~K8slbrp() {
     logger()->info("destroying K8slbrp instance");
 }
 
-std::string K8slbrp::buildK8sLbrpCode(std::string const& k8slbrp_code, K8slbrpPortModeEnum port_mode) {
+std::string K8slbrp::buildK8sLbrpCode(std::string const &k8slbrp_code, K8slbrpPortModeEnum port_mode) {
     if (port_mode == K8slbrpPortModeEnum::SINGLE) {
         return "#define SINGLE_PORT_MODE 1\n" + k8slbrp_code;
     }
@@ -120,8 +120,7 @@ void K8slbrp::reloadCodeWithNewPorts() {
     for (auto &it: get_ports()) {
         if (it->getType() == PortsTypeEnum::FRONTEND) {
             frontend_port = it->index();
-        }
-        else backend_port = it->index();
+        } else backend_port = it->index();
     }
 
     logger()->debug("reloading code with FRONTEND port {0} and BACKEND port {1}",
@@ -197,7 +196,7 @@ void K8slbrp::addPortsInMultiPortMode(const std::string &name, const PortsJsonOb
     auto ipIsSet = conf.ipIsSet();
 
     if (type == PortsTypeEnum::FRONTEND) {
-        if (!ipIsSet) throw std::runtime_error("the ip address in mandatory in MULTI port mode for a FRONTEND port");
+        if (!ipIsSet) throw std::runtime_error("the IP address is mandatory in MULTI port mode for a FRONTEND port");
         auto ip = conf.getIp();
         auto found = frontend_ip_set_.find(ip) != frontend_ip_set_.end();
         if (found) {
@@ -208,8 +207,8 @@ void K8slbrp::addPortsInMultiPortMode(const std::string &name, const PortsJsonOb
         }
         try {
             auto created_port = add_port<PortsJsonObject>(name, conf);
-            auto ip_to_frontend_port = get_hash_table<uint32_t, uint16_t>(EBPF_IP_TO_FRONTEND_PORT_MAP);
-            ip_to_frontend_port.set(
+            auto ip_to_frontend_port_table = get_hash_table<uint32_t, uint16_t>(EBPF_IP_TO_FRONTEND_PORT_MAP);
+            ip_to_frontend_port_table.set(
                     utils::ip_string_to_nbo_uint(created_port->getIp()),
                     created_port->index()
             );
@@ -230,8 +229,7 @@ void K8slbrp::addPorts(const std::string &name, const PortsJsonObject &conf) {
         if (port_mode_ == K8slbrpPortModeEnum::SINGLE) addPortsInSinglePortMode(name, conf);
         else addPortsInMultiPortMode(name, conf);
     } catch (std::runtime_error &ex) {
-        logger()->warn("failed to add port {0}", name);
-        logger()->warn("error message: {0}", ex.what());
+        logger()->warn("failed to add port {0}: {1}", name, ex.what());
         throw;
     }
 
@@ -252,12 +250,30 @@ void K8slbrp::replacePorts(const std::string &name, const PortsJsonObject &conf)
 }
 
 void K8slbrp::delPorts(const std::string &name) {
-    auto port = get_port(name);
-    if (port->getType() == PortsTypeEnum::FRONTEND) {
-        auto ip = port->getIp();
-        frontend_ip_set_.erase(ip);
+    logger()->info("received request for K8slbrp port deletion");
+    try {
+        auto port = get_port(name);
+        if (this->port_mode_ == K8slbrpPortModeEnum::MULTI && port->getType() == PortsTypeEnum::FRONTEND) {
+            auto ip = port->getIp();
+
+            logger()->trace("retrieving ip-to-FrontendPort kernel map");
+            auto ip_to_frontend_port_table = get_hash_table<uint32_t, uint16_t>(EBPF_IP_TO_FRONTEND_PORT_MAP);
+            logger()->trace("retrieved ip-to-FrontendPort kernel map");
+            logger()->trace("trying to remove the port IP address from ip-to-FrontendPort kernel map");
+            ip_to_frontend_port_table.remove(utils::ip_string_to_nbo_uint(ip));
+            logger()->trace("removed the port IP address from ip-to-FrontendPort kernel map");
+
+            if (this->frontend_ip_set_.erase(ip) == 0) {
+                throw std::runtime_error("failed to delete the port IP address for the new FRONTEND port");
+            }
+        }
+        logger()->trace("trying to remove the port");
+        remove_port(name);
+    } catch (std::exception &ex) {
+        logger()->warn("failed to delete port {0}: {1}", name, ex.what());
+        throw;
     }
-    remove_port(name);
+    logger()->info("deleted K8slbrp port");
 }
 
 void K8slbrp::delPortsList() {
@@ -336,10 +352,11 @@ std::vector<std::shared_ptr<Service>> K8slbrp::getServiceList() {
 
 void K8slbrp::addService(const std::string &vip, const uint16_t &vport, const ServiceProtoEnum &proto,
                          const ServiceJsonObject &conf) {
-    logger()->debug("[Service] Received request to create new service entry");
-    logger()->debug("[Service] Virtual IP: {0}, virtual port: {1}, protocol: {2}",
-                    vip, vport,
-                    ServiceJsonObject::ServiceProtoEnum_to_string(proto));
+    logger()->debug("[Service] received request to create new service entry");
+    logger()->debug(
+            "[Service] virtual IP: {0}, virtual port: {1}, protocol: {2}", vip, vport,
+            ServiceJsonObject::ServiceProtoEnum_to_string(proto)
+    );
 
     if (proto == ServiceProtoEnum::ALL) {
         // Let's create 3 different services for TCP, UDP and ICMP
@@ -361,11 +378,10 @@ void K8slbrp::addService(const std::string &vip, const uint16_t &vport, const Se
         // We completed all task, let's directly return since we do not have to
         // execute the code below
         return;
-    } else if (proto == ServiceProtoEnum::ICMP &&
-               conf.getVport() != Service::ICMP_EBPF_PORT) {
+    } else if (proto == ServiceProtoEnum::ICMP && conf.getVport() != Service::ICMP_EBPF_PORT) {
         throw std::runtime_error(
-                "ICMP Service requires 0 as virtual port. Since this parameter is "
-                "useless for ICMP services");
+                "ICMP Service requires 0 as virtual port. Since this parameter is useless for ICMP services"
+        );
     }
 
     Service::ServiceKey key =
@@ -434,7 +450,7 @@ void K8slbrp::delService(const std::string &vip, const uint16_t &vport, const Se
 
     auto service = getService(vip, vport, proto);
 
-    service->removeServiceFromKernelMap();
+    service->delBackendList();
     service_map_.erase(key);
 }
 

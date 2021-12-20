@@ -322,40 +322,6 @@ read_k8sdispatcher_by_id(const std::string &name) {
 }
 
 /**
-* @brief   Read client-subnet by ID
-*
-* Read operation of resource: client-subnet*
-*
-* @param[in] name ID of name
-*
-* Responses:
-* std::string
-*/
-std::string
-read_k8sdispatcher_client_subnet_by_id(const std::string &name) {
-  auto k8sdispatcher = get_cube(name);
-  return k8sdispatcher->getClientSubnet();
-
-}
-
-/**
-* @brief   Read cluster-ip-subnet by ID
-*
-* Read operation of resource: cluster-ip-subnet*
-*
-* @param[in] name ID of name
-*
-* Responses:
-* std::string
-*/
-std::string
-read_k8sdispatcher_cluster_ip_subnet_by_id(const std::string &name) {
-  auto k8sdispatcher = get_cube(name);
-  return k8sdispatcher->getClusterIpSubnet();
-
-}
-
-/**
 * @brief   Read internal-src-ip by ID
 *
 * Read operation of resource: internal-src-ip*
@@ -497,26 +463,6 @@ read_k8sdispatcher_nodeport_rule_by_id(const std::string &name, const uint16_t &
 }
 
 /**
-* @brief   Read internal-src by ID
-*
-* Read operation of resource: internal-src*
-*
-* @param[in] name ID of name
-* @param[in] nodeportPort ID of nodeport-port
-* @param[in] proto ID of proto
-*
-* Responses:
-* std::string
-*/
-std::string
-read_k8sdispatcher_nodeport_rule_internal_src_by_id(const std::string &name, const uint16_t &nodeportPort, const std::string &proto) {
-  auto k8sdispatcher = get_cube(name);
-  auto nodeportRule = k8sdispatcher->getNodeportRule(nodeportPort, proto);
-  return nodeportRule->getInternalSrc();
-
-}
-
-/**
 * @brief   Read nodeport-rule by ID
 *
 * Read operation of resource: nodeport-rule*
@@ -534,6 +480,26 @@ read_k8sdispatcher_nodeport_rule_list_by_id(const std::string &name) {
   for(auto &i : nodeportRule)
     m.push_back(i->toJsonObject());
   return m;
+}
+
+/**
+* @brief   Read nodeport-name by ID
+*
+* Read operation of resource: nodeport-name*
+*
+* @param[in] name ID of name
+* @param[in] nodeportPort ID of nodeport-port
+* @param[in] proto ID of proto
+*
+* Responses:
+* std::string
+*/
+std::string
+read_k8sdispatcher_nodeport_rule_nodeport_name_by_id(const std::string &name, const uint16_t &nodeportPort, const std::string &proto) {
+  auto k8sdispatcher = get_cube(name);
+  auto nodeportRule = k8sdispatcher->getNodeportRule(nodeportPort, proto);
+  return nodeportRule->getNodeportName();
+
 }
 
 /**
@@ -571,6 +537,25 @@ PortsJsonObject
 read_k8sdispatcher_ports_by_id(const std::string &name, const std::string &portsName) {
   auto k8sdispatcher = get_cube(name);
   return k8sdispatcher->getPorts(portsName)->toJsonObject();
+
+}
+
+/**
+* @brief   Read ip by ID
+*
+* Read operation of resource: ip*
+*
+* @param[in] name ID of name
+* @param[in] portsName ID of ports_name
+*
+* Responses:
+* std::string
+*/
+std::string
+read_k8sdispatcher_ports_ip_by_id(const std::string &name, const std::string &portsName) {
+  auto k8sdispatcher = get_cube(name);
+  auto ports = k8sdispatcher->getPorts(portsName);
+  return ports->getIp();
 
 }
 
@@ -742,48 +727,12 @@ update_k8sdispatcher_by_id(const std::string &name, const K8sdispatcherJsonObjec
 }
 
 /**
-* @brief   Update client-subnet by ID
-*
-* Update operation of resource: client-subnet*
-*
-* @param[in] name ID of name
-* @param[in] value Range of IPs of pods in this node
-*
-* Responses:
-*
-*/
-void
-update_k8sdispatcher_client_subnet_by_id(const std::string &name, const std::string &value) {
-  auto k8sdispatcher = get_cube(name);
-
-  return k8sdispatcher->setClientSubnet(value);
-}
-
-/**
-* @brief   Update cluster-ip-subnet by ID
-*
-* Update operation of resource: cluster-ip-subnet*
-*
-* @param[in] name ID of name
-* @param[in] value Range of VIPs where clusterIP services are exposed
-*
-* Responses:
-*
-*/
-void
-update_k8sdispatcher_cluster_ip_subnet_by_id(const std::string &name, const std::string &value) {
-  auto k8sdispatcher = get_cube(name);
-
-  return k8sdispatcher->setClusterIpSubnet(value);
-}
-
-/**
 * @brief   Update internal-src-ip by ID
 *
 * Update operation of resource: internal-src-ip*
 *
 * @param[in] name ID of name
-* @param[in] value Internal src ip used for services with externaltrafficpolicy&#x3D;cluster
+* @param[in] value Internal src ip used for services with externalTrafficPolicy&#x3D;CLUSTER
 *
 * Responses:
 *
@@ -938,27 +887,6 @@ update_k8sdispatcher_nodeport_rule_by_id(const std::string &name, const uint16_t
 }
 
 /**
-* @brief   Update internal-src by ID
-*
-* Update operation of resource: internal-src*
-*
-* @param[in] name ID of name
-* @param[in] nodeportPort ID of nodeport-port
-* @param[in] proto ID of proto
-* @param[in] value Source IP address
-*
-* Responses:
-*
-*/
-void
-update_k8sdispatcher_nodeport_rule_internal_src_by_id(const std::string &name, const uint16_t &nodeportPort, const std::string &proto, const std::string &value) {
-  auto k8sdispatcher = get_cube(name);
-  auto nodeportRule = k8sdispatcher->getNodeportRule(nodeportPort, proto);
-
-  return nodeportRule->setInternalSrc(value);
-}
-
-/**
 * @brief   Update nodeport-rule by ID
 *
 * Update operation of resource: nodeport-rule*
@@ -972,6 +900,27 @@ update_k8sdispatcher_nodeport_rule_internal_src_by_id(const std::string &name, c
 void
 update_k8sdispatcher_nodeport_rule_list_by_id(const std::string &name, const std::vector<NodeportRuleJsonObject> &value) {
   throw std::runtime_error("Method not supported");
+}
+
+/**
+* @brief   Update nodeport-name by ID
+*
+* Update operation of resource: nodeport-name*
+*
+* @param[in] name ID of name
+* @param[in] nodeportPort ID of nodeport-port
+* @param[in] proto ID of proto
+* @param[in] value An optional name for the NodePort rule
+*
+* Responses:
+*
+*/
+void
+update_k8sdispatcher_nodeport_rule_nodeport_name_by_id(const std::string &name, const uint16_t &nodeportPort, const std::string &proto, const std::string &value) {
+  auto k8sdispatcher = get_cube(name);
+  auto nodeportRule = k8sdispatcher->getNodeportRule(nodeportPort, proto);
+
+  return nodeportRule->setNodeportName(value);
 }
 
 /**
@@ -1013,6 +962,26 @@ update_k8sdispatcher_ports_by_id(const std::string &name, const std::string &por
   auto ports = k8sdispatcher->getPorts(portsName);
 
   return ports->update(value);
+}
+
+/**
+* @brief   Update ip by ID
+*
+* Update operation of resource: ip*
+*
+* @param[in] name ID of name
+* @param[in] portsName ID of ports_name
+* @param[in] value IP address of the node interface (only for FRONTEND port)
+*
+* Responses:
+*
+*/
+void
+update_k8sdispatcher_ports_ip_by_id(const std::string &name, const std::string &portsName, const std::string &value) {
+  auto k8sdispatcher = get_cube(name);
+  auto ports = k8sdispatcher->getPorts(portsName);
+
+  return ports->setIp(value);
 }
 
 /**

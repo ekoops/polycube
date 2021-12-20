@@ -39,10 +39,10 @@ class NodeportRuleBase {
   virtual NodeportRuleJsonObject toJsonObject();
 
   /// <summary>
-  /// Source IP address
+  /// An optional name for the NodePort rule
   /// </summary>
-  virtual std::string getInternalSrc() = 0;
-  virtual void setInternalSrc(const std::string &value) = 0;
+  virtual std::string getNodeportName() = 0;
+  virtual void setNodeportName(const std::string &value) = 0;
 
   /// <summary>
   /// Destination L4 port number

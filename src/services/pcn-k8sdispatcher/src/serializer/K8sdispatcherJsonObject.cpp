@@ -20,8 +20,6 @@ namespace model {
 K8sdispatcherJsonObject::K8sdispatcherJsonObject() {
   m_nameIsSet = false;
   m_portsIsSet = false;
-  m_clusterIpSubnetIsSet = false;
-  m_clientSubnetIsSet = false;
   m_internalSrcIpIsSet = false;
   m_nattingRuleIsSet = false;
   m_nodeportRuleIsSet = false;
@@ -33,8 +31,6 @@ K8sdispatcherJsonObject::K8sdispatcherJsonObject(const nlohmann::json &val) :
   JsonObjectBase(val) {
   m_nameIsSet = false;
   m_portsIsSet = false;
-  m_clusterIpSubnetIsSet = false;
-  m_clientSubnetIsSet = false;
   m_internalSrcIpIsSet = false;
   m_nattingRuleIsSet = false;
   m_nodeportRuleIsSet = false;
@@ -52,14 +48,6 @@ K8sdispatcherJsonObject::K8sdispatcherJsonObject(const nlohmann::json &val) :
     }
 
     m_portsIsSet = true;
-  }
-
-  if (val.count("cluster-ip-subnet")) {
-    setClusterIpSubnet(val.at("cluster-ip-subnet").get<std::string>());
-  }
-
-  if (val.count("client-subnet")) {
-    setClientSubnet(val.at("client-subnet").get<std::string>());
   }
 
   if (val.count("internal-src-ip")) {
@@ -108,14 +96,6 @@ nlohmann::json K8sdispatcherJsonObject::toJson() const {
     if (jsonArray.size() > 0) {
       val["ports"] = jsonArray;
     }
-  }
-
-  if (m_clusterIpSubnetIsSet) {
-    val["cluster-ip-subnet"] = m_clusterIpSubnet;
-  }
-
-  if (m_clientSubnetIsSet) {
-    val["client-subnet"] = m_clientSubnet;
   }
 
   if (m_internalSrcIpIsSet) {
@@ -182,40 +162,6 @@ bool K8sdispatcherJsonObject::portsIsSet() const {
 
 void K8sdispatcherJsonObject::unsetPorts() {
   m_portsIsSet = false;
-}
-
-std::string K8sdispatcherJsonObject::getClusterIpSubnet() const {
-  return m_clusterIpSubnet;
-}
-
-void K8sdispatcherJsonObject::setClusterIpSubnet(std::string value) {
-  m_clusterIpSubnet = value;
-  m_clusterIpSubnetIsSet = true;
-}
-
-bool K8sdispatcherJsonObject::clusterIpSubnetIsSet() const {
-  return m_clusterIpSubnetIsSet;
-}
-
-void K8sdispatcherJsonObject::unsetClusterIpSubnet() {
-  m_clusterIpSubnetIsSet = false;
-}
-
-std::string K8sdispatcherJsonObject::getClientSubnet() const {
-  return m_clientSubnet;
-}
-
-void K8sdispatcherJsonObject::setClientSubnet(std::string value) {
-  m_clientSubnet = value;
-  m_clientSubnetIsSet = true;
-}
-
-bool K8sdispatcherJsonObject::clientSubnetIsSet() const {
-  return m_clientSubnetIsSet;
-}
-
-void K8sdispatcherJsonObject::unsetClientSubnet() {
-  m_clientSubnetIsSet = false;
 }
 
 std::string K8sdispatcherJsonObject::getInternalSrcIp() const {
