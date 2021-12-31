@@ -405,7 +405,6 @@ void K8sdispatcher::addNodeportRule(
     logger()->info("added NodePort rule");
 }
 
-// Basic default implementation, place your extension here (if needed)
 void K8sdispatcher::addNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) {
     for (auto &i: conf) {
         addNodeportRule(i.getNodeportPort(), i.getProto(), i);
@@ -417,6 +416,11 @@ void K8sdispatcher::replaceNodeportRule(const uint16_t &nodeportPort, const std:
                                         const NodeportRuleJsonObject &conf) {
     delNodeportRule(nodeportPort, proto);
     addNodeportRule(nodeportPort, proto, conf);
+}
+
+void K8sdispatcher::replaceNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) {
+    delNodeportRuleList();
+    addNodeportRuleList(conf);
 }
 
 void K8sdispatcher::delNodeportRule(const uint16_t &nodeportPort, const std::string &proto) {

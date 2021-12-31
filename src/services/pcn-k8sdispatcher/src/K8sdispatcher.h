@@ -108,6 +108,8 @@ public:
     void replaceNodeportRule(const uint16_t &nodeportPort, const std::string &proto,
                              const NodeportRuleJsonObject &conf) override;
 
+    void replaceNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) override;
+
     void delNodeportRule(const uint16_t &nodeportPort, const std::string &proto) override;
 
     void delNodeportRuleList() override;

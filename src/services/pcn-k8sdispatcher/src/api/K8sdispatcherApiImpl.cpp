@@ -670,7 +670,8 @@ replace_k8sdispatcher_nodeport_rule_by_id(const std::string &name, const uint16_
 */
 void
 replace_k8sdispatcher_nodeport_rule_list_by_id(const std::string &name, const std::vector<NodeportRuleJsonObject> &value) {
-  throw std::runtime_error("Method not supported");
+  auto k8sdispatcher = get_cube(name);
+  k8sdispatcher->replaceNodeportRuleList(value);
 }
 
 /**
