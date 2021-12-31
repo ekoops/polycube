@@ -22,7 +22,6 @@ NodeportRule::NodeportRule(K8sdispatcher &parent, const NodeportRuleJsonObject &
 NodeportRule::~NodeportRule() {}
 
 void NodeportRule::update(const NodeportRuleJsonObject &conf) {
-
     if (conf.nodeportNameIsSet()) {
         setNodeportName(conf.getNodeportName());
     }

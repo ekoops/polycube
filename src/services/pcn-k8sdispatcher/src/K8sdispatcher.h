@@ -105,6 +105,8 @@ public:
 
     void addNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) override;
 
+    void updateNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) override;
+
     void replaceNodeportRule(const uint16_t &nodeportPort, const std::string &proto,
                              const NodeportRuleJsonObject &conf) override;
 

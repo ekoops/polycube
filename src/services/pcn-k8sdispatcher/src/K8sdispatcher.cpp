@@ -318,6 +318,20 @@ void K8sdispatcher::addNattingRuleList(const std::vector<NattingRuleJsonObject> 
     }
 }
 
+void K8sdispatcher::updateNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) {
+    logger()->info("received request for NodePort rules updating");
+    try {
+        for (auto &i: conf) {
+            getNodeportRule(i.getNodeportPort(), i.getProto())->update(i);
+        }
+    }
+    catch (std::exception &ex) {
+        logger()->warn("failed update NodePort rule: {}", ex.what());
+        throw std::runtime_error("failed to update NodePort rule");
+    }
+    logger()->info("updated NodePort rules");
+}
+
 void K8sdispatcher::replaceNattingRule(const std::string &internalSrc, const std::string &internalDst,
                                        const uint16_t &internalSport, const uint16_t &internalDport,
                                        const std::string &proto, const NattingRuleJsonObject &conf) {
@@ -396,7 +410,7 @@ void K8sdispatcher::addNodeportRule(
         dp_rules.set(key_rule, value);
         logger()->trace("stored NodePort rule in NodePort rules kernel map");
     } catch (std::exception &ex) {
-        logger()->error("failed to store NodePort rule in kernel map: {}", ex.what());
+        logger()->warn("failed to store NodePort rule in kernel map: {}", ex.what());
         if (this->nodePortMap_.erase(key) != 1) {
             logger()->error("broken user space NodePort rule map");
         };

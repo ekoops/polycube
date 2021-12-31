@@ -78,6 +78,7 @@ class K8sdispatcherBase: public virtual polycube::service::Cube<Ports> {
   virtual std::vector<std::shared_ptr<NodeportRule>> getNodeportRuleList() = 0;
   virtual void addNodeportRule(const uint16_t &nodeportPort, const std::string &proto, const NodeportRuleJsonObject &conf) = 0;
   virtual void addNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf);
+  virtual void updateNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) = 0;
   virtual void replaceNodeportRule(const uint16_t &nodeportPort, const std::string &proto, const NodeportRuleJsonObject &conf);
   virtual void replaceNodeportRuleList(const std::vector<NodeportRuleJsonObject> &conf) = 0;
   virtual void delNodeportRule(const uint16_t &nodeportPort,const std::string &proto) = 0;
