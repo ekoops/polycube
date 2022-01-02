@@ -52,7 +52,6 @@ void NattingRule::update(const NattingRuleJsonObject &conf) {
 }
 
 NattingRuleJsonObject NattingRule::toJsonObject() {
-    logger()->info("READ NattingRule::toJsonObject");
     NattingRuleJsonObject conf;
     try {
         conf.setInternalSrc(getInternalSrc());

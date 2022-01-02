@@ -380,7 +380,7 @@ void K8slbrp::addService(const std::string &vip, const uint16_t &vport, const Se
         return;
     } else if (proto == ServiceProtoEnum::ICMP && conf.getVport() != Service::ICMP_EBPF_PORT) {
         throw std::runtime_error(
-                "ICMP Service requires 0 as virtual port. Since this parameter is useless for ICMP services"
+                "ICMP Service requires 0 as virtual port since this parameter is useless for ICMP services"
         );
     }
 

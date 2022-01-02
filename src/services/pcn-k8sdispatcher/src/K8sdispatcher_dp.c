@@ -339,10 +339,11 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 srcIp, srcPort, dstIp, dstPort
         );
         if (srcIp == EXTERNAL_IP) {
+            pcn_log(ctx, LOG_TRACE, "no egress rule match - (src: %I:%P, dst: %I:%P)", srcIp, srcPort, dstIp, dstPort);
             pcn_log(
                     ctx, LOG_TRACE,
-                    "no egress rule match: redirected as is to FRONTEND port - (src: %I:%P, dst: %I:%P)",
-                    srcIp, srcPort, dstIp, dstPort
+                    "redirected pkt as is to FRONTEND port - (dst: %I:%P) (out_port: %d)",
+                    dstIp, dstPort, FRONTEND_PORT
             );
             return pcn_pkt_redirect(ctx, md, FRONTEND_PORT);
         }
@@ -432,14 +433,14 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
             forward_value.new_port = srcPort;
             forward_value.originating_rule_type = rule_type;
 
-            pcn_log(ctx, LOG_INFO, "Updating session tables for nodeport");
-            pcn_log(ctx, LOG_INFO, "New outgoing connection: %I:%P -> %I:%P", srcIp,
+            pcn_log(ctx, LOG_INFO, "updating session tables for NodePort");
+            pcn_log(ctx, LOG_INFO, "new outgoing connection: %I:%P -> %I:%P", srcIp,
                     srcPort, dstIp, dstPort);
 
             pcn_log(ctx, LOG_INFO,
-                    "Using ingress value: newIp %I, newPort %P", reverse_value.new_ip, reverse_value.new_port);
+                    "using ingress value: newIp %I, newPort %P", reverse_value.new_ip, reverse_value.new_port);
             pcn_log(ctx, LOG_INFO,
-                    "Using egress value: newIp %I, newPort %P", forward_value.new_ip, forward_value.new_port);
+                    "using egress value: newIp %I, newPort %P", forward_value.new_ip, forward_value.new_port);
 
             rule_type = NAT_SRC;
         } else if (rule_type == NAT_SRC) {
@@ -477,8 +478,8 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
             reverse_value.new_port = srcPort;
             reverse_value.originating_rule_type = rule_type;
 
-            pcn_log(ctx, LOG_INFO, "Updating session tables after SNAT");
-            pcn_log(ctx, LOG_INFO, "New outgoing connection: %I:%P -> %I:%P", srcIp,
+            pcn_log(ctx, LOG_INFO, "updating session tables after SNAT");
+            pcn_log(ctx, LOG_INFO, "new outgoing connection: %I:%P -> %I:%P", srcIp,
                     srcPort, dstIp, dstPort);
         } else {
             // A rule matched in the outside -> inside direction
@@ -511,8 +512,8 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
             reverse_value.new_port = newPort;
             reverse_value.originating_rule_type = rule_type;
 
-            pcn_log(ctx, LOG_INFO, "Updating session tables after DNAT");
-            pcn_log(ctx, LOG_INFO, "New incoming connection: %I:%P -> %I:%P", srcIp,
+            pcn_log(ctx, LOG_INFO, "updating session tables after DNAT");
+            pcn_log(ctx, LOG_INFO, "new incoming connection: %I:%P -> %I:%P", srcIp,
                     srcPort, dstIp, dstPort);
         }
 
@@ -520,16 +521,15 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
         ingress_session_table.update(&reverse_key, &reverse_value);
 
         pcn_log(ctx, LOG_INFO,
-                "Using ingress key: srcIp %I, dstIp %I, srcPort %P, dstPort %P",
+                "using ingress key: srcIp %I, dstIp %I, srcPort %P, dstPort %P",
                 reverse_key.src_ip, reverse_key.dst_ip, reverse_key.src_port,
                 reverse_key.dst_port);
         pcn_log(ctx, LOG_INFO,
-                "Using egress key: srcIp %I, dstIp %I, srcPort %P, dstPort %P",
+                "using egress key: srcIp %I, dstIp %I, srcPort %P, dstPort %P",
                 forward_key.src_ip, forward_key.dst_ip, forward_key.src_port,
                 forward_key.dst_port);
     }
 
-    // todo continua da qui
     // Modify packet
     uint32_t old_ip, old_port;
     if (rule_type == NAT_SRC) {
@@ -560,7 +560,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 tcp->source = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted TCP pkt: (old_src: %I:%P) (new_src: %I:%P)",
+                        ctx, LOG_TRACE, "NATted TCP pkt: (old_src: %I:%P) (new_src: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             } else {
@@ -568,7 +568,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 tcp->dest = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted TCP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
+                        ctx, LOG_TRACE, "NATted TCP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             }
@@ -593,7 +593,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 udp->source = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted UDP pkt: (old_src: %I:%P) (new_src: %I:%P)",
+                        ctx, LOG_TRACE, "NATted UDP pkt: (old_src: %I:%P) (new_src: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             } else {
@@ -601,7 +601,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 udp->dest = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted UDP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
+                        ctx, LOG_TRACE, "NATted UDP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             }
@@ -626,7 +626,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 icmp->un.echo.id = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted ICMP pkt: (old_src: %I:%P) (new_src: %I:%P)",
+                        ctx, LOG_TRACE, "NATted ICMP pkt: (old_src: %I:%P) (new_src: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             } else {
@@ -634,7 +634,7 @@ static int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
                 icmp->un.echo.id = (__be16)
                 new_port;
                 pcn_log(
-                        ctx, LOG_TRACE, "natted ICMP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
+                        ctx, LOG_TRACE, "NATted ICMP pkt: (old_dst: %I:%P) (new_dst: %I:%P)",
                         old_ip, old_port, new_ip, new_port
                 );
             }

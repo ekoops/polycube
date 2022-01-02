@@ -311,7 +311,7 @@ static inline int send_to_frontend(struct CTXTYPE *ctx, struct pkt_metadata *md,
     }
     pcn_log(
             ctx, LOG_TRACE,
-            "sent pkt to the FRONTEND port associated with %I: - (out_port: %d)",
+            "sent pkt to the FRONTEND port associated with %I - (out_port: %d)",
             ip_daddr, *fe_port
     );
     return pcn_pkt_redirect(ctx, md, *fe_port);
@@ -384,9 +384,9 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
     // Only manage ICMP Request and Reply
     if (!((icmp->type == ICMP_ECHO) || (icmp->type == ICMP_ECHOREPLY))) {
         pcn_log(
-            ctx, LOG_TRACE,
-            "dropped ICMP pkt - (in_port: %d) (reason: unsupported_type) (icmp_type: %d)",
-            md->in_port, icmp->type
+                ctx, LOG_TRACE,
+                "dropped ICMP pkt - (in_port: %d) (reason: unsupported_type) (icmp_type: %d)",
+                md->in_port, icmp->type
         );
         return RX_DROP;
     }
@@ -395,7 +395,7 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
     dest = 0x0;
     ip_proto = htons(IPPROTO_ICMP);
 
-    pcn_log(ctx, LOG_DEBUG, "received ICMP pkt: %I --> %I", ip->saddr, ip->daddr);
+    pcn_log(ctx, LOG_DEBUG, "received ICMP pkt - (ip_src: %I, ip_dst: %I)", ip->saddr, ip->daddr);
 
     l4csum_offset = ICMP_CSUM_OFFSET;
     goto LB;
@@ -406,7 +406,7 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
         return RX_DROP;
     }
 
-    pcn_log(ctx, LOG_TRACE, "received UDP pkt: %I:%P --> %I:%P", ip->saddr,
+    pcn_log(ctx, LOG_TRACE, "received UDP pkt - (src: %I:%P, dst: %I:%P)", ip->saddr,
             udp->source, ip->daddr, udp->dest);
 
     source = udp->source;
@@ -422,7 +422,7 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
         return RX_DROP;
     }
 
-    pcn_log(ctx, LOG_TRACE, "received TCP pkt: %I:%P --> %I:%P", ip->saddr,
+    pcn_log(ctx, LOG_TRACE, "received TCP pkt - (src: %I:%P, dst: %I:%P)", ip->saddr,
             tcp->source, ip->daddr, tcp->dest);
 
     source = tcp->source;
@@ -438,7 +438,7 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
     __u32 new_port = dest;
 
     // Currently, the "backend port" is the one connected to the backends
-    // So, this packet is coming from the fronted and is returning back to the
+    // So, this packet is coming from the frontend and is returning back to the
     // originating Pod.
 
     if (md->in_port != BACKEND_PORT) {
@@ -460,8 +460,8 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
         // packet as is.
         if (!backend_value) {
             pcn_log(
-                ctx, LOG_TRACE,
-                "failed service lookup: redirected as is to BACKEND port - (out_port: %d)", BACKEND_PORT
+                    ctx, LOG_TRACE,
+                    "failed service lookup: redirected as is to BACKEND port - (out_port: %d)", BACKEND_PORT
             );
             return pcn_pkt_redirect(ctx, md, BACKEND_PORT);
         }
@@ -486,8 +486,8 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
             pcn_log(ctx, LOG_TRACE, "src ip rewritten to %I", ip->saddr);
         }
 
-        pcn_log(ctx, LOG_TRACE, "redirected to %I:%P --> %I:%P", ip->saddr, source,
-                bck_value->ip, bck_value->port);
+        pcn_log(ctx, LOG_TRACE, "pkt DNATted and redirected to BACKEND port - (src: %I:%P, new_dst: %I:%P)",
+                ip->saddr, source, bck_value->ip, bck_value->port);
 
         // We are using l4csum_offset here, since it is equivalent of the protocol
         if (l4csum_offset == TCP_CSUM_OFFSET) {
@@ -591,13 +591,17 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
             fe_port = *fe_port_ptr;
         }
 
-        pcn_log(ctx, LOG_TRACE, "found FRONTEND port associated with %I: - (out_port: %d)", ip->daddr, fe_port);
+        pcn_log(
+                ctx, LOG_TRACE,
+                "found FRONTEND port associated with the pkt destination address - (dst_ip: %I) (out_port: %d)",
+                ip->daddr, fe_port
+        );
 
         if (l4csum_offset == TCP_CSUM_OFFSET) {
             old_port = tcp->source;
             tcp->source = new_port;
             pcn_log(ctx, LOG_TRACE,
-                    "translated existing TCP session as %I:%P --> %I:%P", new_ip,
+                    "translated existing TCP session - (new_src: %I:%P, dst: %I:%P)", new_ip,
                     tcp->source, ip->daddr, dest);
             checksum(ctx, old_port, new_port, old_ip, new_ip, old_sip, new_sip,
             TCP_CSUM_OFFSET);
@@ -605,15 +609,16 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
             old_port = udp->source;
             udp->source = new_port;
             pcn_log(ctx, LOG_TRACE,
-                    "translated existing UDP session as %I:%P --> %I:%P", new_ip,
+                    "translated existing UDP session - (new_src: %I:%P, dst: %I:%P)", new_ip,
                     new_port, ip->daddr, dest);
             checksum(ctx, old_port, new_port, old_ip, new_ip, old_sip, new_sip,
             UDP_CSUM_OFFSET);
         } else {
-            pcn_log(ctx, LOG_TRACE, "translated existing ICMP session as %I --> %I",
+            pcn_log(ctx, LOG_TRACE, "translated existing ICMP session - (new_ip_src: %I, ip_dst: %I)",
                     new_ip, ip->daddr);
             pcn_l3_csum_replace(ctx, IP_CSUM_OFFSET, old_ip, new_ip, 4);
         }
+        pcn_log(ctx, LOG_TRACE, "redirected pkt to FRONTEND port - (out_port: %d)", fe_port);
         return pcn_pkt_redirect(ctx, md, fe_port);
     }
 
@@ -632,7 +637,7 @@ static __always_inline int handle_rx(struct CTXTYPE *ctx,
         if (arp->ar_op == bpf_htons(ARPOP_REQUEST)) {
             pcn_log(
                     ctx, LOG_TRACE, "received ARP pkt is an ARP request - (in_port: %d) (arp_opcode: %d)",
-                    md->in_port, arp->ar_op
+                    md->in_port, bpf_htons(arp->ar_op)
             );
             struct src_ip_r_key k = {32, arp->ar_tip};
             struct src_ip_r_value *v = src_ip_rewrite.lookup(&k);

@@ -57,7 +57,6 @@ void K8sdispatcherBase::update(const K8sdispatcherJsonObject &conf) {
 }
 
 K8sdispatcherJsonObject K8sdispatcherBase::toJsonObject() {
-    logger()->info("READ K8sdispatcherBase::toJsonObject");
     K8sdispatcherJsonObject conf;
   conf.setBase(to_json());
 

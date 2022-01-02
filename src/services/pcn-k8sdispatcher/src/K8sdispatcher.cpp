@@ -40,7 +40,6 @@ K8sdispatcher::K8sdispatcher(const std::string name, const K8sdispatcherJsonObje
 }
 
 K8sdispatcherJsonObject K8sdispatcher::toJsonObject() {
-    logger()->info("READ K8sdispatcher::toJsonObject");
     K8sdispatcherJsonObject conf;
     try {
         conf.setBase(Cube::to_json());

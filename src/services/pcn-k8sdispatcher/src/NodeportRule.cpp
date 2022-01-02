@@ -31,7 +31,6 @@ void NodeportRule::update(const NodeportRuleJsonObject &conf) {
 }
 
 NodeportRuleJsonObject NodeportRule::toJsonObject() {
-    logger()->info("READ NodeportRule::toJsonObject");
     NodeportRuleJsonObject conf;
     try {
         conf.setNodeportName(getNodeportName());
