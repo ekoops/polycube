@@ -32,6 +32,8 @@ struct dp_v {
     uint16_t entry_type;
 } __attribute__((packed));
 
+enum class SlowPathReason { ARP_REPLY = 0 };
+
 class K8sdispatcher : public K8sdispatcherBase {
     friend class NodeportRule;
 

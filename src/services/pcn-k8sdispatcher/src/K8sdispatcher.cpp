@@ -9,6 +9,11 @@
 #include "K8sdispatcher.h"
 #include "K8sdispatcher_dp.h"
 
+#include <tins/ethernetII.h>
+#include <tins/tins.h>
+
+using namespace Tins;
+
 const std::string K8sdispatcher::EBPF_DP_RULES_MAP = "dp_rules";
 
 K8sdispatcher::K8sdispatcher(const std::string name, const K8sdispatcherJsonObject &conf)
@@ -144,7 +149,21 @@ uint32_t K8sdispatcher::ip_to_dec(const std::string &ip) {
 void K8sdispatcher::packet_in(Ports &port,
                               polycube::service::PacketInMetadata &md,
                               const std::vector<uint8_t> &packet) {
-    logger()->debug("Packet received from port {0}", port.name());
+    try {
+        switch (static_cast<SlowPathReason>(md.reason)) {
+            case SlowPathReason::ARP_REPLY: {
+                logger()->debug("received pkt in slowpath - reason: ARP_REPLY");
+                EthernetII pkt (&packet[0], packet.size());
+                auto backendPort = this->getBackendPort();
+                if (backendPort != nullptr) backendPort->send_packet_out(pkt);
+            }
+            default: {
+                logger()->error("not valid reason {0} received", md.reason);
+            }
+        }
+    } catch (const std::exception &e) {
+        logger()->error("exception during slowpath packet processing: '{0}'", e.what());
+    }
 }
 
 std::shared_ptr<Ports> K8sdispatcher::getPorts(const std::string &name) {
